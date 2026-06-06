@@ -1,0 +1,189 @@
+"""
+Representa un usuario del sistema.
+"""
+type User {
+    """ID único del usuario (UUID)"""
+    id: ID!
+    """Email del usuario (único)"""
+    email: String!
+    """Nombre del usuario"""
+    firstName: String!
+    """Apellido del usuario"""
+    lastName: String!
+    """Rol asignado al usuario"""
+    role: Role!
+    """Si el usuario está habilitado"""
+    enabled: Boolean!
+    """Fecha de creación"""
+    createdAt: String!
+    """Fecha de última actualización"""
+    updatedAt: String
+    """Usuario que creó este registro"""
+    createdBy: String
+    """Usuario que actualizó este registro"""
+    updatedBy: String
+    """Fecha de eliminación (soft delete)"""
+    deletedAt: String
+    """Usuario que eliminó este registro"""
+    deletedBy: String
+}
+
+"""
+Respuesta de autenticación al hacer login.
+"""
+type AuthResponse {
+    """ID del usuario autenticado"""
+    id: ID!
+    """Email del usuario"""
+    email: String!
+    """Nombre del usuario"""
+    firstName: String!
+    """Apellido del usuario"""
+    lastName: String!
+    """Token JWT para futuras solicitudes"""
+    token: String!
+}
+
+type Query {
+    """
+    Obtiene todos los usuarios registrados.
+
+    Ejemplo:
+    query {
+      getAllUsers {
+        id
+        email
+        firstName
+        lastName
+        role {
+          name
+        }
+      }
+    }
+    """
+    getAllUsers: [User!]!
+
+    """
+    Obtiene un usuario por su ID.
+
+    Ejemplo:
+    query {
+      userById(id: "550e8400-e29b-41d4-a716-446655440000") {
+        id
+        email
+        firstName
+        lastName
+        role {
+          id
+          name
+        }
+      }
+    }
+    """
+    userById(id: ID!): User
+
+    """
+    Obtiene un usuario por su email.
+
+    Ejemplo:
+    query {
+      userByEmail(email: "juan@example.com") {
+        id
+        email
+        firstName
+        lastName
+        role {
+          name
+        }
+      }
+    }
+    """
+    userByEmail(email: String!): User
+}
+
+type Mutation {
+    """
+    Crea un nuevo usuario asignándole un rol.
+    IMPORTANTE: Primero obtén el roleId con getAllRoles.
+
+    Ejemplo:
+    mutation {
+      createUser(
+        email: "juan@example.com"
+        password: "Password123!"
+        firstName: "Juan"
+        lastName: "Pérez"
+        roleId: "550e8400-e29b-41d4-a716-446655440000"
+      ) {
+        id
+        email
+        firstName
+        lastName
+        role {
+          name
+        }
+        createdAt
+      }
+    }
+    """
+    createUser(
+        email: String!
+        password: String!
+        firstName: String!
+        lastName: String!
+        roleId: ID!
+    ): User!
+
+    """
+    Autentica un usuario y retorna un token JWT.
+    NOTA: Guarda el token para usarlo en futuras solicitudes.
+
+    Ejemplo:
+    mutation {
+      login(
+        email: "superadmin@superadmin"
+        password: "superadmin12345"
+      ) {
+        id
+        email
+        firstName
+        lastName
+        token
+      }
+    }
+    """
+    login(email: String!, password: String!): AuthResponse!
+
+    """
+    Actualiza el nombre y apellido de un usuario.
+
+    Ejemplo:
+    mutation {
+      updateUser(
+        id: "550e8400-e29b-41d4-a716-446655440000"
+        firstName: "Juan Carlos"
+        lastName: "Pérez López"
+      ) {
+        id
+        firstName
+        lastName
+        updatedAt
+      }
+    }
+    """
+    updateUser(
+        id: ID!
+        firstName: String!
+        lastName: String!
+    ): User!
+
+    """
+    Elimina un usuario permanentemente.
+
+    Ejemplo:
+    mutation {
+      deleteUser(id: "550e8400-e29b-41d4-a716-446655440000")
+    }
+    """
+    deleteUser(id: ID!): Boolean!
+}

@@ -1,0 +1,41 @@
+"""
+Representa una sesión activa de un usuario.
+"""
+type Session {
+    """ID único de la sesión (UUID)"""
+    id: ID!
+    """Usuario propietario de la sesión"""
+    user: User!
+    """Token JWT de la sesión"""
+    token: String!
+    """Fecha de creación"""
+    createdAt: String!
+    """Fecha de expiración (24 horas desde la creación)"""
+    expiresAt: String!
+    """Si la sesión está activa"""
+    active: Boolean!
+    """Fecha de última actualización"""
+    updatedAt: String
+    """Fecha de eliminación"""
+    deletedAt: String
+}
+
+extend type Query {
+    """
+    Obtiene una sesión por su token JWT.
+
+    Ejemplo:
+    query {
+      sessionByToken(token: "eyJhbGciOiJIUzI1NiJ9...") {
+        id
+        user {
+          id
+          email
+        }
+        active
+        expiresAt
+      }
+    }
+    """
+    sessionByToken(token: String!): Session
+}

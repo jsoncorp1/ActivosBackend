@@ -1,0 +1,99 @@
+"""
+Representa un rol del sistema.
+Roles disponibles: SUPERADMIN, GERENTE, TECNICO, ASISTENTE
+"""
+type Role {
+    """ID único del rol (UUID)"""
+    id: ID!
+    """Nombre del rol en mayúsculas"""
+    name: String!
+    """Descripción del rol"""
+    description: String
+    """Fecha de creación"""
+    createdAt: String!
+    """Fecha de última actualización"""
+    updatedAt: String
+    """Usuario que creó el rol"""
+    createdBy: String
+    """Usuario que actualizó el rol"""
+    updatedBy: String
+    """Fecha de eliminación (soft delete)"""
+    deletedAt: String
+    """Usuario que eliminó el rol"""
+    deletedBy: String
+}
+
+extend type Query {
+    """
+    Obtiene todos los roles activos del sistema (excluye eliminados).
+
+    Ejemplo:
+    query {
+      getAllRoles {
+        id
+        name
+        description
+      }
+    }
+    """
+    getAllRoles: [Role!]!
+
+    """
+    Obtiene un rol por su ID.
+
+    Ejemplo:
+    query {
+      roleById(id: "550e8400-e29b-41d4-a716-446655440000") {
+        id
+        name
+        description
+      }
+    }
+    """
+    roleById(id: ID!): Role
+
+    """
+    Busca un rol por nombre exacto (sensible a mayúsculas).
+
+    Ejemplo:
+    query {
+      roleByName(name: "SUPERADMIN") {
+        id
+        name
+        description
+      }
+    }
+    """
+    roleByName(name: String!): Role
+}
+
+extend type Mutation {
+    """
+    Crea un nuevo rol. El nombre se normaliza automáticamente a MAYÚSCULAS.
+    Lanza error si el rol ya existe.
+
+    Ejemplo:
+    mutation {
+      createRole(
+        name: "supervisor"
+        description: "Supervisa tareas del equipo"
+      ) {
+        id
+        name
+        description
+        createdAt
+      }
+    }
+    """
+    createRole(name: String!, description: String): Role!
+
+    """
+    Elimina un rol (soft delete). Solo marca deletedAt, no borra el registro.
+
+    Ejemplo:
+    mutation {
+      deleteRole(id: "550e8400-e29b-41d4-a716-446655440000")
+    }
+    """
+    deleteRole(id: ID!): Boolean!
+}

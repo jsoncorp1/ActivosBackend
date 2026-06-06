@@ -41,15 +41,16 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-          echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Create Dockerrun.aws.json
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          cat > Dockerrun.aws.json << 'EOF'
+          cat > Dockerrun.aws.json << EOF
           {
             "AWSEBDockerrunVersion": "1",
             "Image": {
-              "Name": "${{ steps.login-ecr.outputs.registry }}/usermanagement2026:latest",
+              "Name": "${REGISTRY}/usermanagement2026:latest",
               "Update": "true"
             },
             "Ports": [

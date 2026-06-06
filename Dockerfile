@@ -3,9 +3,9 @@ WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-FROM caddy:latest
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-RUN apt-get update && apt-get install -y openjdk-21-jre-headless && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache caddy
 COPY --from=build /app/target/*.jar app.jar
 COPY Caddyfile /etc/caddy/Caddyfile
 EXPOSE 80 443 8080

@@ -1,4 +1,4 @@
-﻿name: Deploy to AWS App Runner
+﻿name: Deploy to AWS Elastic Beanstalk
 
 on:
   push:
@@ -29,13 +29,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Push to Amazon ECR
-        id: image
+      - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image to ECR
         env:
-          REGISTRY: ${{ steps.image.outputs.registry }}
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: usermanagement2026
           IMAGE_TAG: latest
         run: |
@@ -43,8 +43,31 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Deploy to App Runner
+      - name: Create Dockerrun.aws.json
         run: |
-          aws apprunner update-service \
-            --service-arn arn:aws:apprunner:us-east-1:ACCOUNT_ID:service/usermanagement2026/GENERATED_ID \
-            --source-configuration ImageRepository={ImageIdentifier=${{ steps.image.outputs.image }},ImageRepositoryType=ECR}
+          cat > Dockerrun.aws.json << 'EOF'
+          {
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "${{ steps.login-ecr.outputs.registry }}/usermanagement2026:latest",
+              "Update": "true"
+            },
+            "Ports": [
+              {
+                "ContainerPort": 8080
+              }
+            ],
+            "Logging": "/var/log/eb-activity.log"
+          }
+          EOF
+
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: usermanagement
+          environment_name: usermanagement-prod
+          version_label: ${{ github.run_id }}
+          region: us-east-1
+          deployment_package: Dockerrun.aws.json

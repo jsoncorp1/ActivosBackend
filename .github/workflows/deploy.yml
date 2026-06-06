@@ -36,7 +36,7 @@ jobs:
       - name: Build and push Docker image
         env:
           REGISTRY: ${{ steps.image.outputs.registry }}
-          REPOSITORY: usermanagement
+          REPOSITORY: usermanagement2026
           IMAGE_TAG: latest
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
@@ -46,5 +46,5 @@ jobs:
       - name: Deploy to App Runner
         run: |
           aws apprunner update-service \
-            --service-arn arn:aws:apprunner:us-east-1:ACCOUNT_ID:service/usermanagement/GENERATED_ID \
+            --service-arn arn:aws:apprunner:us-east-1:ACCOUNT_ID:service/usermanagement2026/GENERATED_ID \
             --source-configuration ImageRepository={ImageIdentifier=${{ steps.image.outputs.image }},ImageRepositoryType=ECR}

@@ -1,0 +1,68 @@
+type StatusChange {
+    fromStatus: String
+    toStatus: String!
+    changedAt: String!
+    changedBy: String!
+}
+
+enum MaintenanceRequestStatusEnum {
+    PENDING
+    APPROVED
+    REJECTED
+    COMPLETED
+}
+
+type MaintenanceRequest {
+    id: ID!
+    title: String!
+    description: String
+    status: MaintenanceRequestStatusEnum!
+    fixedAsset: FixedAsset!
+    statusChangeLog: [StatusChange!]!
+    createdAt: String!
+    updatedAt: String
+    createdBy: String
+    updatedBy: String
+    deletedAt: String
+    deletedBy: String
+}
+
+type PageResponseMaintenanceRequest {
+    content: [MaintenanceRequest!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
+extend type Query {
+    """Obtiene todas las solicitudes de mantenimiento paginadas."""
+    getAllMaintenanceRequests(offset: Int, limit: Int): PageResponseMaintenanceRequest!
+
+    """Filtra solicitudes por activo fijo."""
+    getMaintenanceRequestsByFixedAsset(fixedAssetId: ID!, offset: Int, limit: Int): PageResponseMaintenanceRequest!
+
+    """Filtra solicitudes por estado."""
+    getMaintenanceRequestsByStatus(status: MaintenanceRequestStatusEnum!, offset: Int, limit: Int): PageResponseMaintenanceRequest!
+
+    """Filtra solicitudes por usuario que las creó."""
+    getMaintenanceRequestsByCreatedBy(createdBy: String!, offset: Int, limit: Int): PageResponseMaintenanceRequest!
+
+    """Obtiene una solicitud por su ID."""
+    getMaintenanceRequestById(id: ID!): MaintenanceRequest
+}
+
+extend type Mutation {
+    """Crea una nueva solicitud de mantenimiento en estado PENDING."""
+    createMaintenanceRequest(title: String!, description: String, fixedAssetId: ID!): MaintenanceRequest!
+
+    """Actualiza título y/o descripción de la solicitud."""
+    updateMaintenanceRequest(id: ID!, title: String, description: String): MaintenanceRequest!
+
+    """Cambia el estado y registra el cambio en el historial."""
+    updateMaintenanceRequestStatus(id: ID!, newStatus: MaintenanceRequestStatusEnum!): MaintenanceRequest!
+
+    """Elimina una solicitud (soft delete)."""
+    deleteMaintenanceRequest(id: ID!): Boolean!
+}

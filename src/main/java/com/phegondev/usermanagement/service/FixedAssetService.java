@@ -23,6 +23,7 @@ public class FixedAssetService {
 
     private final FixedAssetRepository fixedAssetRepository;
     private final UserRepository userRepository;
+    private final ActivityLogsService activityLogsService;
 
     private String generateCode() {
         Optional<FixedAsset> lastAsset = fixedAssetRepository.findTopByDeletedAtIsNullOrderByCodeDesc();
@@ -45,7 +46,13 @@ public class FixedAssetService {
         fixedAsset.setStatus(status);
         fixedAsset.setAcquisitionDate(acquisitionDate);
         fixedAsset.setImageUrl(imageUrl);
-        return fixedAssetRepository.save(fixedAsset);
+        FixedAsset saved = fixedAssetRepository.save(fixedAsset);
+
+        activityLogsService.logCreate("FixedAsset", saved.getId(),
+                "Creó FixedAsset: " + name,
+                "{\"code\":\"" + saved.getCode() + "\",\"name\":\"" + name + "\",\"category\":\"" + category + "\",\"status\":\"" + status + "\"}");
+
+        return saved;
     }
 
     public FixedAsset createFixedAssetWithUser(String name, FixedAssetCategoryEnum category, String description,
@@ -64,7 +71,13 @@ public class FixedAssetService {
         fixedAsset.setImageUrl(imageUrl);
         fixedAsset.setUser(user);
         fixedAsset.setAssignmentDate(LocalDate.now());
-        return fixedAssetRepository.save(fixedAsset);
+        FixedAsset saved = fixedAssetRepository.save(fixedAsset);
+
+        activityLogsService.logCreate("FixedAsset", saved.getId(),
+                "Creó FixedAsset: " + name + " asignado a " + user.getEmail(),
+                "{\"code\":\"" + saved.getCode() + "\",\"name\":\"" + name + "\",\"category\":\"" + category + "\",\"userId\":\"" + userId + "\"}");
+
+        return saved;
     }
 
     public PageResponse<FixedAsset> getAllFixedAssets(int offset, int limit) {
@@ -106,6 +119,9 @@ public class FixedAssetService {
                                         LocalDate acquisitionDate, String imageUrl) {
         FixedAsset fixedAsset = getFixedAssetById(id)
                 .orElseThrow(() -> new RuntimeException("FixedAsset no encontrado"));
+
+        String oldValue = "{\"name\":\"" + fixedAsset.getName() + "\",\"status\":\"" + fixedAsset.getStatus() + "\",\"category\":\"" + fixedAsset.getCategory() + "\"}";
+
         if (name != null) fixedAsset.setName(name);
         if (category != null) fixedAsset.setCategory(category);
         if (description != null) fixedAsset.setDescription(description);
@@ -113,7 +129,13 @@ public class FixedAssetService {
         if (status != null) fixedAsset.setStatus(status);
         if (acquisitionDate != null) fixedAsset.setAcquisitionDate(acquisitionDate);
         if (imageUrl != null) fixedAsset.setImageUrl(imageUrl);
-        return fixedAssetRepository.save(fixedAsset);
+        FixedAsset saved = fixedAssetRepository.save(fixedAsset);
+
+        String newValue = "{\"name\":\"" + saved.getName() + "\",\"status\":\"" + saved.getStatus() + "\",\"category\":\"" + saved.getCategory() + "\"}";
+        activityLogsService.logUpdate("FixedAsset", saved.getId(),
+                "Actualizó FixedAsset: " + saved.getName(), oldValue, newValue);
+
+        return saved;
     }
 
     public FixedAsset assignFixedAssetToUser(UUID fixedAssetId, UUID userId) {
@@ -123,7 +145,13 @@ public class FixedAssetService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         fixedAsset.setUser(user);
         fixedAsset.setAssignmentDate(LocalDate.now());
-        return fixedAssetRepository.save(fixedAsset);
+        FixedAsset saved = fixedAssetRepository.save(fixedAsset);
+
+        activityLogsService.logUpdate("FixedAsset", saved.getId(),
+                "Asignó FixedAsset " + saved.getCode() + " a usuario " + user.getEmail(),
+                null, "{\"userId\":\"" + userId + "\",\"userEmail\":\"" + user.getEmail() + "\"}");
+
+        return saved;
     }
 
     public Boolean deleteFixedAsset(UUID id) {
@@ -132,6 +160,8 @@ public class FixedAssetService {
             FixedAsset fa = fixedAsset.get();
             fa.setDeletedAt(LocalDateTime.now());
             fixedAssetRepository.save(fa);
+            activityLogsService.logDelete("FixedAsset", fa.getId(),
+                    "Eliminó FixedAsset: " + fa.getName() + " (code: " + fa.getCode() + ")");
             return true;
         }
         return false;

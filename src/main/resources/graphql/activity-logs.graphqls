@@ -1,0 +1,57 @@
+enum ActivityTypeEnum {
+    CREATE
+    READ
+    UPDATE
+    DELETE
+    STATUS_CHANGE
+}
+
+type ActivityLogs {
+    id: ID!
+    actionName: String!
+    activityType: ActivityTypeEnum!
+    description: String
+    entityType: String!
+    entityId: ID!
+    oldValue: String
+    newValue: String
+    user: User
+    userEmail: String
+    createdAt: String!
+    createdBy: String
+}
+
+type PageResponseActivityLogs {
+    content: [ActivityLogs!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
+extend type Query {
+    """Obtiene todos los logs de actividad paginados."""
+    getAllActivities(offset: Int, limit: Int): PageResponseActivityLogs!
+
+    """Filtra logs por usuario."""
+    getActivitiesByUser(userId: ID!, offset: Int, limit: Int): PageResponseActivityLogs!
+
+    """Filtra logs por tipo de actividad (CREATE, UPDATE, etc.)."""
+    getActivitiesByType(activityType: ActivityTypeEnum!, offset: Int, limit: Int): PageResponseActivityLogs!
+
+    """Filtra logs por tipo de entidad (FixedAsset, MaintenanceRequest, etc.)."""
+    getActivitiesByEntityType(entityType: String!, offset: Int, limit: Int): PageResponseActivityLogs!
+
+    """Obtiene toda la bitácora de un registro específico."""
+    getActivitiesByEntity(entityType: String!, entityId: ID!, offset: Int, limit: Int): PageResponseActivityLogs!
+
+    """Filtra logs por rango de fechas (ISO-8601: 2024-01-15T00:00:00)."""
+    getActivitiesByDateRange(startDate: String!, endDate: String!, offset: Int, limit: Int): PageResponseActivityLogs!
+
+    """Busca logs cuyo actionName contenga el término buscado."""
+    searchActivities(searchTerm: String!, offset: Int, limit: Int): PageResponseActivityLogs!
+
+    """Obtiene un log por su ID."""
+    getActivityById(id: ID!): ActivityLogs
+}

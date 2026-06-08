@@ -1,0 +1,62 @@
+enum MaintenanceTypeEnum {
+    CORRECTIVE
+    PREVENTIVE
+}
+
+type Maintenance {
+    id: ID!
+    type: MaintenanceTypeEnum!
+    description: String
+    imageUrl: String!
+    user: User
+    maintenanceRequest: MaintenanceRequest!
+    createdAt: String!
+    updatedAt: String
+    createdBy: String
+    updatedBy: String
+    deletedAt: String
+    deletedBy: String
+}
+
+type PageResponseMaintenance {
+    content: [Maintenance!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
+extend type Query {
+    """Obtiene todos los mantenimientos paginados."""
+    getAllMaintenances(offset: Int, limit: Int): PageResponseMaintenance!
+
+    """Filtra mantenimientos por usuario que los realizó."""
+    getMaintenancesByUser(userId: ID!, offset: Int, limit: Int): PageResponseMaintenance!
+
+    """Filtra mantenimientos por tipo."""
+    getMaintenancesByType(type: MaintenanceTypeEnum!, offset: Int, limit: Int): PageResponseMaintenance!
+
+    """Obtiene un mantenimiento por su ID."""
+    getMaintenanceById(id: ID!): Maintenance
+
+    """Obtiene el mantenimiento asociado a una solicitud."""
+    getMaintenanceByMaintenanceRequest(maintenanceRequestId: ID!): Maintenance
+}
+
+extend type Mutation {
+    """Crea un nuevo mantenimiento vinculado a una solicitud. userId es opcional."""
+    createMaintenance(
+        type: MaintenanceTypeEnum!
+        description: String
+        imageUrl: String!
+        maintenanceRequestId: ID!
+        userId: ID
+    ): Maintenance!
+
+    """Actualiza descripción e imageUrl (solo campos no nulos)."""
+    updateMaintenance(id: ID!, description: String, imageUrl: String): Maintenance!
+
+    """Elimina un mantenimiento (soft delete)."""
+    deleteMaintenance(id: ID!): Boolean!
+}

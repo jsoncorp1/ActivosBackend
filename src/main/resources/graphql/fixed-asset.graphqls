@@ -1,0 +1,107 @@
+enum FixedAssetCategoryEnum {
+    ELECTRONIC_EQUIPMENT
+    HVAC_EQUIPMENT
+    FIXTURES
+    OTHERS
+}
+
+enum FixedAssetStatusEnum {
+    ACTIVE
+    IN_STORAGE
+    UNDER_MAINTENANCE
+    DAMAGED
+    RETIRED
+    LOST
+}
+
+type FixedAsset {
+    id: ID!
+    code: String!
+    name: String!
+    category: FixedAssetCategoryEnum!
+    description: String
+    location: String
+    status: FixedAssetStatusEnum!
+    acquisitionDate: String
+    imageUrl: String
+    user: User
+    assignmentDate: String
+    createdAt: String!
+    updatedAt: String
+    createdBy: String
+    updatedBy: String
+    deletedAt: String
+    deletedBy: String
+}
+
+type PageResponseFixedAsset {
+    content: [FixedAsset!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
+extend type Query {
+    """Obtiene todos los activos fijos paginados."""
+    getAllFixedAssets(offset: Int, limit: Int): PageResponseFixedAsset!
+
+    """Filtra activos fijos por estado."""
+    getFixedAssetsByStatus(status: FixedAssetStatusEnum!, offset: Int, limit: Int): PageResponseFixedAsset!
+
+    """Filtra activos fijos por categoría."""
+    getFixedAssetsByCategory(category: FixedAssetCategoryEnum!, offset: Int, limit: Int): PageResponseFixedAsset!
+
+    """Obtiene activos fijos asignados a un usuario."""
+    getFixedAssetsByUser(userId: ID!, offset: Int, limit: Int): PageResponseFixedAsset!
+
+    """Obtiene un activo fijo por su ID."""
+    getFixedAssetById(id: ID!): FixedAsset
+
+    """Obtiene un activo fijo por su código."""
+    getFixedAssetByCode(code: String!): FixedAsset
+}
+
+extend type Mutation {
+    """Crea un activo fijo sin usuario asignado."""
+    createFixedAsset(
+        name: String!
+        category: FixedAssetCategoryEnum!
+        description: String
+        location: String
+        status: FixedAssetStatusEnum!
+        acquisitionDate: String!
+        imageUrl: String
+    ): FixedAsset!
+
+    """Crea un activo fijo y lo asigna directamente a un usuario."""
+    createFixedAssetWithUser(
+        name: String!
+        category: FixedAssetCategoryEnum!
+        description: String
+        location: String
+        status: FixedAssetStatusEnum!
+        acquisitionDate: String!
+        imageUrl: String
+        userId: ID!
+    ): FixedAsset!
+
+    """Actualiza los campos del activo fijo (solo los campos no nulos)."""
+    updateFixedAsset(
+        id: ID!
+        name: String
+        category: FixedAssetCategoryEnum
+        description: String
+        location: String
+        status: FixedAssetStatusEnum
+        acquisitionDate: String
+        imageUrl: String
+    ): FixedAsset!
+
+    """Asigna un activo fijo a un usuario y registra la fecha de asignación."""
+    assignFixedAssetToUser(fixedAssetId: ID!, userId: ID!): FixedAsset!
+
+    """Elimina un activo fijo (soft delete)."""
+    deleteFixedAsset(id: ID!): Boolean!
+}

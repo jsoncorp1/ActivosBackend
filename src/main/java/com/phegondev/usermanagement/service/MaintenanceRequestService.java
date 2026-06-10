@@ -27,6 +27,7 @@ public class MaintenanceRequestService {
     private final MaintenanceRequestRepository maintenanceRequestRepository;
     private final FixedAssetRepository fixedAssetRepository;
     private final ActivityLogsService activityLogsService;
+    private final PushNotificationService pushNotificationService;
 
     public MaintenanceRequest createMaintenanceRequest(String title, String description, UUID fixedAssetId) {
         FixedAsset fixedAsset = fixedAssetRepository.findById(fixedAssetId)
@@ -51,6 +52,8 @@ public class MaintenanceRequestService {
         activityLogsService.logCreate("MaintenanceRequest", saved.getId(),
                 "Creó MaintenanceRequest: " + title,
                 "{\"title\":\"" + title + "\",\"status\":\"PENDING\",\"fixedAssetId\":\"" + fixedAssetId + "\"}");
+
+        pushNotificationService.notifyTecnicosNewRequest(saved.getId().toString(), saved.getTitle());
 
         return saved;
     }

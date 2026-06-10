@@ -1,0 +1,12 @@
+extend type Mutation {
+    """Registra el push token del dispositivo del usuario autenticado."""
+    registerPushToken(input: RegisterPushTokenInput!): Boolean!
+
+    """Desactiva todos los push tokens del usuario autenticado."""
+    unregisterPushTokens: Boolean!
+}
+
+input RegisterPushTokenInput {
+    token: String!
+    platform: String!
+}

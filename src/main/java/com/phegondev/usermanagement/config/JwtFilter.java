@@ -2,6 +2,10 @@ package com.phegondev.usermanagement.config;
 
 import com.phegondev.usermanagement.service.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -10,6 +14,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -28,7 +33,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
             if (jwtService.isTokenValid(token)) {
                 String email = jwtService.extractSubject(token);
-                // Aquí puedes establecer el usuario en el contexto de seguridad si es necesario
+                String role = jwtService.extractRole(token);
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        email, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
 
